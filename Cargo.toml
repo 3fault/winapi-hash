@@ -1,0 +1,25 @@
+cargo-features = ["strip"]
+
+[package]
+name = "winapi-hash"
+version = "0.1.0"
+edition = "2018"
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "README.md",
+    "LICENCE"
+]
+authors = ["vd4re <vd4re@protonmail.ch>"]
+homepage = "https://github.com/vd4re/winapi-hash"
+description = "Windows API hashing implementation"
+repository = "https://github.com/vd4re/winapi-hash"
+keywords = ["obfuscation", "hash", "winapi", "windows", "wide"]
+license = "MIT"
+
+[dependencies]
+winapi = "0.3.9"
+ntapi = "0.3.6"
+
+[profile.release]
+strip = true
