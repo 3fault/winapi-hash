@@ -2,7 +2,7 @@ cargo-features = ["strip"]
 
 [package]
 name = "winapi-hash"
-version = "0.1.11"
+version = "0.1.12"
 edition = "2018"
 include = [
     "src/**/*",
