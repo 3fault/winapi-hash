@@ -4,6 +4,7 @@
 #![allow(dead_code)]
 #![allow(incomplete_features)]
 
+pub use winapi;
 mod util;
 
 use winapi::{

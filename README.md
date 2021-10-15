@@ -9,6 +9,13 @@ Don't use
 ## Example Usage
 
 ```rust
+// Const trait impls are currently experimental still
+#![feature(const_trait_impl)]
+#![allow(incomplete_features)]
+
+#[macro_use]
+extern crate winapi_hash;
+
 // https://github.com/HindrikStegenga/const-fnv1a-hash
 pub struct FNV1A64;
 impl const winapi_hash::HashFunction for FNV1A64 {
@@ -32,13 +39,17 @@ fn main() {
     use std::ffi::CString;
     use winapi::shared::ntdef::NULL;
     use winapi::um::winuser::{MB_ICONINFORMATION, MB_OK};
+    use winapi_hash::HashFunction;
 
     let resolver = winapi_hash::ApiHashResolver::<FNV1A64>::new();
     let lp_text = CString::new("Hello, world!").unwrap();
     let lp_caption = CString::new("MessageBox Example").unwrap();
 
+    // Automatically resolves then calls MessageBoxA and stores the result
+    // If you don't care about what the function returns,
+    // call the macro as "let _: () = api_call!(...);"
     let _message_box_a_result: u32 = winapi_hash::api_call!(
-        resolver, crate::hash::FNV1A64, 
+        resolver, FNV1A64, 
         "user32.dll" -> "MessageBoxA" (NULL, lp_text.as_ptr(), lp_caption.as_ptr(), MB_OK | MB_ICONINFORMATION)
     );
 }
