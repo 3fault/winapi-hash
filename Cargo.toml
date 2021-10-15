@@ -2,7 +2,7 @@ cargo-features = ["strip"]
 
 [package]
 name = "winapi-hash"
-version = "0.1.12"
+version = "0.1.13"
 edition = "2018"
 include = [
     "src/**/*",
@@ -24,5 +24,6 @@ ntapi = "0.3.6"
 [profile.release]
 strip = true
 
-#[package.metadata.docs.rs]
-#targets = ["x86-pc-windows-msvc", "x86_64-pc-windows-msvc"]
+[package.metadata.docs.rs]
+default-target = "x86_64-pc-windows-msvc"
+targets = ["i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
