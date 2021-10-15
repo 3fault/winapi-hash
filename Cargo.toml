@@ -24,5 +24,5 @@ ntapi = "0.3.6"
 [profile.release]
 strip = true
 
-[package.metadata.docs.rs]
-targets = ["x86-pc-windows-msvc", "x86_64-pc-windows-msvc"]
+#[package.metadata.docs.rs]
+#targets = ["x86-pc-windows-msvc", "x86_64-pc-windows-msvc"]
