@@ -2,6 +2,7 @@ pub mod image_export_directory;
 pub mod module_entry_list;
 pub mod wide;
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! to_va {
     ($base:expr, $offset:expr) => {
@@ -10,6 +11,7 @@ macro_rules! to_va {
 }
 
 // I forget where I got this trick from, will credit when found
+#[doc(hidden)]
 #[macro_export]
 macro_rules! infer_type {
     ($($tt:tt)*) => {
@@ -17,7 +19,10 @@ macro_rules! infer_type {
     };
 }
 
-// Once const generics mature to allow const fn in traits, this macro can be cleaned up to remove the $alg:ty
+/// Macro that will automaically hash your function string, 
+/// resolve and transmute the function, and finally call it.
+/// 
+/// This function will panic when the function cannot be resolved.
 #[macro_export]
 macro_rules! api_call {
     ($resolver:expr, $alg:ty, $mod:literal -> $fn:literal ($($arg:expr),* $(,)?)) => {{
