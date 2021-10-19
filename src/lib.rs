@@ -96,35 +96,20 @@ where
     }
 
     unsafe fn get_module_base(module: &str) -> Result<HMODULE, ()> {
-        use ntapi::{
-            ntldr::{LDR_DATA_TABLE_ENTRY, PLDR_DATA_TABLE_ENTRY},
-            winapi_local::um::winnt::NtCurrentTeb,
-            FIELD_OFFSET,
-        };
+        use ntapi::winapi_local::um::winnt::NtCurrentTeb;
         use std::ffi::OsString;
         use util::wide::FromWide;
-        use winapi::shared::ntdef::PLIST_ENTRY;
+        use crate::util::entry_list::ModuleEntryList;
 
-        let head: PLIST_ENTRY =
-            &mut (*(*(*(NtCurrentTeb())).ProcessEnvironmentBlock).Ldr).InMemoryOrderModuleList;
-        let mut curr: PLIST_ENTRY = (*head).Flink;
+        let entry_list = ModuleEntryList::new(
+            &mut (*(*(*(NtCurrentTeb())).ProcessEnvironmentBlock).Ldr).InMemoryOrderModuleList,
+        );
+        for entry in entry_list {
+            let entry_name: OsString = FromWide::from_wide_ptr_null(entry.BaseDllName.Buffer);
 
-        // TODO: Create an iterator util for this linked list
-        while curr != head {
-            let entry = (curr as usize - FIELD_OFFSET!(LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks))
-                as PLDR_DATA_TABLE_ENTRY;
-
-            let entry_name = {
-                let entry_name: OsString =
-                    FromWide::from_wide_ptr_null((*entry).BaseDllName.Buffer);
-                entry_name.to_string_lossy().into_owned()
-            };
-
-            if module == entry_name {
-                return Ok((*entry).DllBase as HMODULE);
+            if module == entry_name.to_string_lossy().into_owned() {
+                return Ok(entry.DllBase as HMODULE);
             }
-
-            curr = (*curr).Flink;
         }
 
         Err(())

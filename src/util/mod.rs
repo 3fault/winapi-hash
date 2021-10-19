@@ -1,3 +1,4 @@
+pub mod entry_list;
 pub mod wide;
 
 #[macro_export]
