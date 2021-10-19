@@ -7,6 +7,7 @@
 pub use winapi;
 mod util;
 
+use crate::util::wide::*;
 use winapi::{
     shared::{basetsd::ULONG_PTR, minwindef::HMODULE},
     um::winnt::LPCWSTR,
@@ -47,16 +48,13 @@ where
         module_name: &str,
         hash: [u8; H::OUTPUT_SIZE],
     ) -> Result<ULONG_PTR, ()> {
-        let module: HMODULE =
-            (self.load_library)(util::wide::ToWide::to_wide_null(&module_name).as_ptr());
+        let module: HMODULE = (self.load_library)(ToWide::to_wide_null(&module_name).as_ptr());
         ApiHashResolver::<H>::resolve(module, hash)
     }
 
     unsafe fn resolve(handle: HMODULE, hash: [u8; H::OUTPUT_SIZE]) -> Result<ULONG_PTR, ()> {
-        use winapi::{
-            shared::minwindef::{PDWORD, PWORD},
-            um::winnt::*,
-        };
+        use crate::util::image_export_directory::ExportDirectoryList;
+        use winapi::um::winnt::*;
 
         if !ApiHashResolver::<H>::is_valid_module(handle) {
             return Err(());
@@ -70,41 +68,24 @@ where
                 .VirtualAddress
         ) as PIMAGE_EXPORT_DIRECTORY);
 
-        let exp_addrs = to_va!(handle, exp_dir.AddressOfFunctions) as PDWORD;
-        let exp_names = to_va!(handle, exp_dir.AddressOfNames) as PDWORD;
-        let exp_ords = to_va!(handle, exp_dir.AddressOfNameOrdinals) as PWORD;
-
-        // TODO: Create an iterator util for this loop
-        let mut i = 0;
-        while i < exp_dir.NumberOfNames {
-            let fn_name =
-                std::ffi::CStr::from_ptr(to_va!(handle, *exp_names.add(i as usize)) as LPCSTR)
-                    .to_str()
-                    .unwrap();
-
-            if hash == H::digest(fn_name.as_bytes()) {
-                return Ok(to_va!(
-                    handle,
-                    *(exp_addrs.add(*(exp_ords.add(i as usize)) as usize))
-                ) as ULONG_PTR);
+        let export_list = ExportDirectoryList::new(handle, exp_dir);
+        for export in export_list {
+            if hash == H::digest(export.1.as_bytes()) {
+                return Ok(export.0);
             }
-
-            i += 1;
         }
 
-        Ok(0)
+        Err(())
     }
 
     unsafe fn get_module_base(module: &str) -> Result<HMODULE, ()> {
+        use crate::util::module_entry_list::ModuleEntryList;
         use ntapi::winapi_local::um::winnt::NtCurrentTeb;
         use std::ffi::OsString;
-        use util::wide::FromWide;
-        use crate::util::entry_list::ModuleEntryList;
 
-        let entry_list = ModuleEntryList::new(
+        for entry in ModuleEntryList::new(
             &mut (*(*(*(NtCurrentTeb())).ProcessEnvironmentBlock).Ldr).InMemoryOrderModuleList,
-        );
-        for entry in entry_list {
+        ) {
             let entry_name: OsString = FromWide::from_wide_ptr_null(entry.BaseDllName.Buffer);
 
             if module == entry_name.to_string_lossy().into_owned() {
@@ -118,11 +99,7 @@ where
     unsafe fn is_valid_module(handle: HMODULE) -> bool {
         use winapi::{
             shared::{minwindef::DWORD, ntdef::NULL},
-            um::winnt::{
-                IMAGE_DIRECTORY_ENTRY_EXPORT, IMAGE_DOS_HEADER, IMAGE_DOS_SIGNATURE,
-                IMAGE_FILE_DLL, IMAGE_NT_HEADERS, IMAGE_NT_SIGNATURE, PIMAGE_DOS_HEADER,
-                PIMAGE_NT_HEADERS,
-            },
+            um::winnt::*,
         };
 
         if handle == NULL as HMODULE {

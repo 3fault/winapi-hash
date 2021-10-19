@@ -1,4 +1,5 @@
-pub mod entry_list;
+pub mod image_export_directory;
+pub mod module_entry_list;
 pub mod wide;
 
 #[macro_export]
