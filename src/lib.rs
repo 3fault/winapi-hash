@@ -98,25 +98,15 @@ where
     unsafe fn get_module_base(module: &str) -> Result<HMODULE, ()> {
         use ntapi::{
             ntldr::{LDR_DATA_TABLE_ENTRY, PLDR_DATA_TABLE_ENTRY},
-            ntpebteb::PTEB,
+            winapi_local::um::winnt::NtCurrentTeb,
             FIELD_OFFSET,
         };
         use std::ffi::OsString;
         use util::wide::FromWide;
         use winapi::shared::ntdef::PLIST_ENTRY;
 
-        // TODO: Change from inline x86 to __readgsqword and __readfsdword macros for better cross-compatibility
-        let mut pteb: PTEB;
-        if cfg!(target_arch = "x86") {
-            asm!("mov {0}, FS:[0x18]", out(reg) pteb);
-        } else if cfg!(target_arch = "x86_64") {
-            asm!("mov {0}, GS:[0x30]", out(reg) pteb);
-        } else {
-            return Err(());
-        }
-
         let head: PLIST_ENTRY =
-            &mut (*(*(*(pteb)).ProcessEnvironmentBlock).Ldr).InMemoryOrderModuleList;
+            &mut (*(*(*(NtCurrentTeb())).ProcessEnvironmentBlock).Ldr).InMemoryOrderModuleList;
         let mut curr: PLIST_ENTRY = (*head).Flink;
 
         // TODO: Create an iterator util for this linked list
