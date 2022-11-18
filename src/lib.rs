@@ -11,6 +11,7 @@ or on [0xf0x's blog](https://neil-fox.github.io/Anti-analysis-using-api-hashing/
 */
 
 #![feature(adt_const_params)]
+#![feature(const_trait_impl)]
 #![feature(generic_const_exprs)]
 #![allow(dead_code)]
 #![allow(incomplete_features)]
@@ -28,6 +29,7 @@ use winapi::{
 
 /// A trait providing a common digest function and length to be used by the
 /// [ApiHashResolver](struct.ApiHashResolver.html).
+#[const_trait]
 pub trait HashFunction {
     /// The output size of the digest in bytes, the [digest function](#tymethod.digest)
     /// will return an array of [`u8`] of the output size.
@@ -40,7 +42,7 @@ pub trait HashFunction {
     fn digest(data: &[u8]) -> [u8; Self::OUTPUT_SIZE];
 }
 
-/// Generic structure holding a [HashFunction](trait.HashFunction.html) trait with,
+/// Generic structure holding a [HashFunction](trait.HashFunction.html) trait with
 /// associated functions used for resolving windows APIs dynamically.
 pub struct ApiHashResolver<H> {
     load_library: fn(LPCWSTR) -> HMODULE,
@@ -77,7 +79,7 @@ where
     /// 
     /// To then use this function, it will have to be transmuted
     /// into a function pointer with with the correct signature.
-    /// See the [std::mem::tranmute examples](https://doc.rust-lang.org/stable/std/mem/fn.transmute.html#examples)
+    /// See the [std::mem::transmute examples](https://doc.rust-lang.org/stable/std/mem/fn.transmute.html#examples)
     /// or the [api_call](macro.api_call.html) macro for more information.
     pub unsafe fn resolve_fn(
         &self,
