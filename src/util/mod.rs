@@ -28,7 +28,7 @@ macro_rules! api_call {
     ($resolver:expr, $alg:ty, $mod:literal -> $fn:literal ($($arg:expr),* $(,)?)) => {{
         const FN_HASH: [u8; <$alg>::OUTPUT_SIZE] = <$alg>::digest($fn.as_bytes());
         let function: fn($(infer_type!($arg)),*) -> _ = unsafe {
-            std::mem::transmute($resolver.resolve_fn($mod, FN_HASH).unwrap())
+            std::mem::transmute($resolver.resolve_fn($mod.as_bytes(), FN_HASH).unwrap())
         };
         function($($arg),*)
     }};

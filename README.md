@@ -78,42 +78,23 @@ fn main() {
 ```
 Decompilation
 ```c
-__int64 sub_140001640()
+__int64 sub_140001B80()
 {
-  __int64 (__fastcall *v0)(__int64); // rdi
-  __int64 v1; // rsi
-  __int64 v2; // rdi
-  __int64 (__fastcall *v3)(__int64, __int64, __int64, _QWORD); // rdx
-  __int64 (__fastcall *v4)(__int64, __int64, __int64, _QWORD); // rbx
-  __int64 v5; // rsi
-  __int64 v6; // rdi
-  __int64 v7; // rax
-  __int64 v9; // [rsp+28h] [rbp-38h]
-  __int64 v10; // [rsp+30h] [rbp-30h]
-  const char *v11; // [rsp+40h] [rbp-20h]
-  char *v12; // [rsp+48h] [rbp-18h]
-  __int16 v13; // [rsp+50h] [rbp-10h]
-  int v14; // [rsp+58h] [rbp-8h]
-  __int64 v15; // [rsp+60h] [rbp+0h]
+  __int64 (__fastcall *v0)(__int64, __int64, __int64, _QWORD); // rdx
+  __int64 (__fastcall *v1)(__int64, __int64, __int64, _QWORD); // rbx
+  __int64 v2; // rsi
+  __int64 v3; // rdi
+  __int64 v4; // rax
+  __int64 v6; // [rsp+38h] [rbp-20h]
 
-  v15 = -2i64;
-  v0 = (__int64 (__fastcall *)(__int64))sub_140001000();
-  v11 = "user32.dll";
-  v12 = "";
-  v13 = 0;
-  v14 = 1;
-  sub_1400017F0(&v9, &v11);
-  v1 = v9;
-  v2 = v0(v9);
-  if ( v10 )
-    sub_140001CC0(v1, 2 * v10, 2i64);
-  if ( sub_1400012E0(v2, 7995333796877250590i64) )
-    sub_14001BF20((__int64)"called `Result::unwrap()` on an `Err` value");
-  v4 = v3;
-  v5 = sub_140001CF0(0i64);
-  v6 = sub_140001D00(L"Hello, World!");
-  v7 = sub_140001D00(L"MessageBox Example");
-  return v4(v5, v6, v7, 0i64);
+  v6 = sub_140001100();
+  if ( sub_140001000(&v6, "user32.dll", 10i64, 7995333796877250590i64) )
+    sub_14001C4A0((__int64)"called `Result::unwrap()` on an `Err` value");
+  v1 = v0;
+  v2 = sub_140001CB0(0i64);
+  v3 = sub_140001CC0(L"Hello, World!");
+  v4 = sub_140001CC0(L"MessageBox Example");
+  return v1(v2, v3, v4, 0i64);
 }
 ```
 The resulting decompilation has some obvious downsides to it as of this moment, it is immediately clear what the routine is doing however there are many potential improvements for the future. MessageBoxW at least does not show up in the IAT or strings.

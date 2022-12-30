@@ -13,6 +13,7 @@ or on [0xf0x's blog](https://neil-fox.github.io/Anti-analysis-using-api-hashing/
 #![feature(adt_const_params)]
 #![feature(const_trait_impl)]
 #![feature(generic_const_exprs)]
+#![feature(associated_type_defaults)]
 #![allow(dead_code)]
 #![allow(incomplete_features)]
 #![warn(missing_docs)]
@@ -83,10 +84,10 @@ where
     /// or the [api_call](macro.api_call.html) macro for more information.
     pub unsafe fn resolve_fn(
         &self,
-        module_name: &str,
+        module_name: &[u8],
         hash: [u8; H::OUTPUT_SIZE],
     ) -> Result<ULONG_PTR, ()> {
-        let module: HMODULE = (self.load_library)(ToWide::to_wide_null(&module_name).as_ptr());
+        let module: HMODULE = (self.load_library)(ToWide::to_wide_null(&std::str::from_utf8(module_name).unwrap()).as_ptr());
         ApiHashResolver::<H>::resolve(module, hash)
     }
 
